@@ -1,21 +1,45 @@
 // tests/e2e/login.spec.js
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
 
-test("user can log in with env credentials", async ({ page }) => {
-  await page.goto("/login");
+const email = process.env.TEST_USER_EMAIL;
+const password = process.env.TEST_USER_PASSWORD;
 
-  const email = process.env.TEST_USER_EMAIL;
-  const password = process.env.TEST_USER_PASSWORD;
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-  expect(email, "TEST_USER_EMAIL is missing").toBeTruthy();
-  expect(password, "TEST_USER_PASSWORD is missing").toBeTruthy();
+console.log('EMAIL FROM ENV:', process.env.TEST_USER_EMAIL);
 
-  await page.getByLabel(/email/i).fill(email);
-  await page.getByLabel(/password/i).fill(password);
+test('user can log in with valid credentials', async ({ page }) => {
+  console.log('Navigating to login');
+  await page.goto('/login');
 
-  await page.getByRole("button", { name: /log in|sign in/i }).click();
+  console.log('Waiting for login');
+  await page.waitForSelector('text=Login');
 
-  await expect(
-    page.getByRole("heading", { name: /dashboard|welcome|venues/i }),
-  ).toBeVisible();
+  console.log('Page loaded');
+
+  console.log('click login');
+  await page.click('text=Login');
+
+  console.log('email input wait');
+  await page.waitForSelector('input[name="email"]');
+
+  console.log('input field filled');
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', password);
+
+  console.log('click loginclick login');
+  await page.click('button:has-text("Login")');
+
+  await expect(page.locator('text=Welcome')).toBeVisible();
+});
+
+test('user sees error on invalid credentials', async ({ page }) => {
+  await page.goto('/');
+  await page.click('text=Login');
+  await page.fill('input[name="email"]', 'wrong@example.com');
+  await page.fill('input[name="password"]', 'wrongpass');
+  await page.click('button:has-text("Login")');
+  await expect(page.locator('text=Invalid')).toBeVisible();
 });

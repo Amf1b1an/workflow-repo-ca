@@ -1,16 +1,17 @@
 // tests/e2e/navigation.spec.js
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
 
-test("click through venue list and open details page", async ({ page }) => {
-  await page.goto("/venues");
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-  const listLocator = page.getByTestId("venue-list");
-  await expect(listLocator).toBeVisible();
+test('user can navigate to venue and see details', async ({ page }) => {
+  await page.goto('/login');
+  await page.waitForSelector('.venue-list-item');
 
-  const firstVenue = page.getByTestId("venue-card").first();
-  await expect(firstVenue).toBeVisible();
-  await firstVenue.click();
+  const venueItem = page.locator('.venue-list-item').first();
+  await expect(venueItem).toBeVisible();
 
-  await expect(page).toHaveURL(/\/venues\/[\w-]+/);
-  await expect(page.getByTestId("venue-title")).toBeVisible();
+  await venueItem.click();
+  await expect(page.locator('h1')).toContainText('Venue details');
 });
