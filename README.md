@@ -5,6 +5,7 @@ npm install // in order to install all dependencies
 ---------------------
 
 Testing: 
+
 npm run test // for vitest
 
 npm run test:e2e *or* npm run test:e2e ui // for e2e testing with playwright
